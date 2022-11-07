@@ -26,4 +26,4 @@ jobs:
         black --diff --check $(git ls-files '*.py')
         pycodestyle $(git ls-files '*.py')
         pydocstyle $(git ls-files '*.py')
-        mypy --strict $(git ls-files '*.py')
+        mypy --strict --ignore-missing-imports $(git ls-files '*.py')
