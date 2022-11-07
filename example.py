@@ -1,7 +1,7 @@
 """Example script."""
 
 
-def main():
+def main() -> None:
     """Run the example."""
     pass
 
