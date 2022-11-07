@@ -1,5 +1,5 @@
 """Example tests."""
-from example import main
+from src.example import main
 
 
 def test_example() -> None:
