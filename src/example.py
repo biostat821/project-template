@@ -6,5 +6,12 @@ def main() -> None:
     pass
 
 
+def do_something():
+    """Do something else."""
+    a = 5
+    b = a * 3
+    c = a + b
+
+
 if __name__ == "__main__":
     main()

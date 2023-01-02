@@ -8,20 +8,44 @@ jobs:
     name: tests
     runs-on: ubuntu-latest
     steps:
+    - name: Install gh
+      run: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+        && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+        && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+        && sudo apt update \
+        && sudo apt install gh -y
+
     - name: Check out the repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python 3.x
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
-        python-version: 3.x
+        python-version: 3.10.8
 
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
+        python -m venv venv
+        source venv/bin/activate
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
 
     - name: Run pytest
       run: |
-        if [ -d tests/ ]; then python -m pytest tests/; fi
+        source venv/bin/activate
+        if [ -d tests/ ]; then coverage run -m pytest tests/; fi
+        
+    - name: Get coverage
+      run: |
+        if [ -f .coverage ]; then
+          source venv/bin/activate
+          COVERAGE=$(coverage report -m)
+          gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+          -f body="$COVERAGE"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
