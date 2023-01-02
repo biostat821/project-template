@@ -40,12 +40,14 @@ jobs:
       run: |
         if [ -f .coverage ]; then
           source venv/bin/activate
-          COVERAGE=$(coverage report -m)
+          REPORT=$'```\n'
+          REPORT+=$(coverage report -m)
+          REPORT+=$'\n```'
           gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
           /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-          -f body="$COVERAGE"
+          -f body="$REPORT"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
