@@ -28,7 +28,7 @@ jobs:
         if [ -d tests/ ]; then
           source venv/bin/activate
           code=$(
-            coverage run --source=src/ -m pytest tests/ > test_report
+            coverage run --rcfile=.github/workflows/.coveragerc --source=src/ -m pytest tests/ > test_report
             echo $?
           )
           status=

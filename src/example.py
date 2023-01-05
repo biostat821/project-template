@@ -1,4 +1,7 @@
-"""Example script."""
+"""Test example.
+
+Other things.
+"""
 
 
 def main() -> None:
