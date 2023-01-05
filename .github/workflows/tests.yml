@@ -33,8 +33,8 @@ jobs:
 
     - name: Run pytest
       run: |
-        source venv/bin/activate
         if [ -d tests/ ]; then
+          source venv/bin/activate
           code=$(
             coverage run --source=src/ -m pytest tests/ > test_report
             echo $?
@@ -47,13 +47,12 @@ jobs:
             repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
             -f state="$status" \
             -f context='tests' \
-            -f description='Tests passed, maybe'
+            -f description="Test status: $status"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
         
-    - name: Get coverage
+    - name: Create coverage comment
       run: |
         if [ -f .coverage ]; then
           source venv/bin/activate
@@ -61,10 +60,16 @@ jobs:
           REPORT+=$(coverage report -m)
           REPORT+=$'\n```'
           gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-          -f body="$REPORT"
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+            -f body="$REPORT"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check coverage
+      run: |
+        .github/workflows/diff_coverage.sh \
+        ${{ github.event.pull_request.base.sha }} \
+        ${{ github.event.pull_request.head.sha }}
