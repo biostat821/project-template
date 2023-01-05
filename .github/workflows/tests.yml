@@ -45,8 +45,8 @@ jobs:
             --method POST \
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
-            -f state='$status' \
-            -f context='tests'
+            -f state="$status" \
+            -f context='tests' \
             -f description='Tests passed, maybe'
         fi
       env:
