@@ -49,6 +49,8 @@ jobs:
             -f context='tests'
             -f description='Tests passed, maybe'
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         
     - name: Get coverage
