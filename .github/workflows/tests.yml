@@ -34,7 +34,22 @@ jobs:
     - name: Run pytest
       run: |
         source venv/bin/activate
-        if [ -d tests/ ]; then coverage run -m pytest tests/; fi
+        if [ -d tests/ ]; then
+          code=$(
+            coverage run --source=src/ -m pytest tests/ > test_report
+            echo $?
+          )
+          status=
+          if [[ code = 0 ]]; then status=success; else status=failure; fi
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+            -f state='$status' \
+            -f context='tests'
+            -f description='Tests passed, maybe' \
+        fi
+
         
     - name: Get coverage
       run: |
