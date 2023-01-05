@@ -62,6 +62,9 @@ jobs:
 
     - name: Check coverage
       run: |
+        # Fetch enough history for a common merge-base commit
+        git fetch origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
+        # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
         git fetch origin ${{ github.event.pull_request.base.ref }}
         source venv/bin/activate
         .github/workflows/diff_coverage.sh \
