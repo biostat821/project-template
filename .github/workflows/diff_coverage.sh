@@ -49,7 +49,7 @@ diff_ex=$(grep -cFxf executed_lines.txt diff_lines.txt)
 diff_miss=$(grep -cFxf missing_lines.txt diff_lines.txt)
 diff_stmts=$(($diff_miss + $diff_ex))
 if [ $diff_stmts != 0 ]; then
-    diff_cover=$((1 - $diff_miss / $diff_stmts))
+    diff_cover=$(echo "scale=2; 1 - $diff_miss / $diff_stmts" | bc)
 fi
 echo "JUST THE DIFF"
 echo "TOTAL | $diff_stmts | $diff_miss | $diff_cover | "
