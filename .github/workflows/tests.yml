@@ -43,13 +43,24 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check coverage
+      run: |
+        # Fetch enough history for a common merge-base commit
+        git fetch origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
+        # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
+        git fetch origin ${{ github.event.pull_request.base.ref }}
+        source venv/bin/activate
+        coverage json
+        git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
+        python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
         
     - name: Create coverage comment
       run: |
         if [ -f .coverage ]; then
           source venv/bin/activate
           REPORT=$'```\n'
-          REPORT+=$(coverage report -m)
+          REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
           gh api \
             --method POST \
@@ -59,14 +70,3 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Check coverage
-      run: |
-        # Fetch enough history for a common merge-base commit
-        git fetch origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
-        # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
-        git fetch origin ${{ github.event.pull_request.base.ref }}
-        source venv/bin/activate
-        .github/workflows/diff_coverage.sh \
-        ${{ github.event.pull_request.base.sha }} \
-        ${{ github.event.pull_request.head.sha }}
