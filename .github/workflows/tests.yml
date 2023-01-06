@@ -28,7 +28,7 @@ jobs:
       run: |
         if [ -d tests/ ]; then
           source venv/bin/activate
-          coverage run --source=src/ -m pytest tests/ > test_report.txt
+          coverage run --source=src/ -m pytest tests/
           # code=$(
           #   coverage run --source=src/ -m pytest tests/ > test_report.txt
           #   echo $?
