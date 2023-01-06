@@ -35,14 +35,14 @@ jobs:
           status=
           if [[ code = 0 ]]; then status=success; else status=failure; fi
           echo "status: ${status}"
-          # gh api \
-          #   --method POST \
-          #   -H "Accept: application/vnd.github+json" \
-          #   repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
-          #   -f state="$status" \
-          #   -f context='tests' \
-          #   -f description="Test status: $status" \
-          #   &> /dev/null
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+            -f state="$status" \
+            -f context='tests' \
+            -f description="Test status: $status" \
+            &> /dev/null
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +69,7 @@ jobs:
           -H "Accept: application/vnd.github+json" \
           repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
           -f state="$status" \
-          -f context='coverage' \
+          -f context='tests' \
           -f description="Coverage status: $status" \
           &> /dev/null
         
