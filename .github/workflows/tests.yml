@@ -28,9 +28,10 @@ jobs:
         if [ -d tests/ ]; then
           source venv/bin/activate
           code=$(
-            coverage run --rcfile=.github/workflows/.coveragerc --source=src/ -m pytest tests/ > test_report
+            coverage run --source=src/ -m pytest tests/ > test_report.txt
             echo $?
           )
+          cat test_report.txt
           status=
           if [[ code = 0 ]]; then status=success; else status=failure; fi
           gh api \
