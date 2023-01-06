@@ -40,7 +40,8 @@ jobs:
             repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
             -f state="$status" \
             -f context='tests' \
-            -f description="Test status: $status"
+            -f description="Test status: $status" \
+            &> /dev/null
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,35 +49,41 @@ jobs:
     - name: Check coverage
       run: |
         # Fetch enough history for a common merge-base commit
-        git fetch origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
+        git fetch -q origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
         # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
-        git fetch origin ${{ github.event.pull_request.base.ref }}
+        git fetch -q origin ${{ github.event.pull_request.base.ref }}
         source venv/bin/activate
-        coverage json
+        coverage json &> /dev/null
         git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
-        # git diff HEAD^..HEAD > diff.txt
-        cat diff.txt
         code=$(
           python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
           echo $?
         )
         status=
         if [[ code = 0 ]]; then status=success; else status=failure; fi
-        echo "status: ${status}"
-        cat diff_coverage.txt
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          -f state="$status" \
+          -f context='test coverage' \
+          -f description="Coverage status: $status" \
+          &> /dev/null
         
     - name: Create coverage comment
       run: |
         if [ -f .coverage ]; then
           source venv/bin/activate
-          REPORT=$'```\n'
+          REPORT=$'diff coverage:\n'
+          REPORT+=$'```\n'
           REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-            -f body="$REPORT"
+            -f body="$REPORT" \
+            &> /dev/null
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
