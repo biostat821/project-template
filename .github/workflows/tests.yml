@@ -61,6 +61,17 @@ jobs:
           python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
           echo $?
         )
+        REPORT=$'diff coverage:\n'
+        REPORT+=$'```\n'
+        REPORT+=$(cat diff_coverage.txt)
+        REPORT+=$'\n```'
+        echo "comment: ${REPORT}"
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+          -f body="$REPORT" \
+          > comment_response.json
         status=
         if [[ code = 0 ]]; then status=success; else status=failure; fi
         echo "status: ${status}"
@@ -71,25 +82,7 @@ jobs:
           -f state="$status" \
           -f context='coverage' \
           -f description="Coverage status: $status" \
+          -f target_url=$(jq ".url" comment_response.json)
           &> /dev/null
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Create coverage comment
-      run: |
-        if [ -f .coverage ]; then
-          source venv/bin/activate
-          REPORT=$'diff coverage:\n'
-          REPORT+=$'```\n'
-          REPORT+=$(cat diff_coverage.txt)
-          REPORT+=$'\n```'
-          echo "comment: ${REPORT}"
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-            -f body="$REPORT" \
-            &> /dev/null
-        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
