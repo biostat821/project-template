@@ -84,7 +84,7 @@ jobs:
           -f state="$status" \
           -f context='coverage' \
           -f description="Coverage status: $status" \
-          -f target_url="$url"
+          -f target_url=$url
           &> /dev/null
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
