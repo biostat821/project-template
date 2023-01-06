@@ -75,6 +75,9 @@ jobs:
         status=
         if [[ code = 0 ]]; then status=success; else status=failure; fi
         echo "status: ${status}"
+        cat comment_response.json
+        url=$(jq ".url" comment_response.json)
+        echo $url
         gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
@@ -82,7 +85,7 @@ jobs:
           -f state="$status" \
           -f context='coverage' \
           -f description="Coverage status: $status" \
-          -f target_url=$(jq ".url" comment_response.json)
+          -f target_url="$url"
           &> /dev/null
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
