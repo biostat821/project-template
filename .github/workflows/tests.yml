@@ -53,7 +53,7 @@ jobs:
         # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
         git fetch -q origin ${{ github.event.pull_request.base.ref }}
         source venv/bin/activate
-        coverage json &> /dev/null
+        coverage json -q
         git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
         code=$(
           python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
