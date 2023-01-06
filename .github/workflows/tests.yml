@@ -56,7 +56,13 @@ jobs:
         git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
         # git diff HEAD^..HEAD > diff.txt
         cat diff.txt
-        python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
+        code=$(
+          python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
+          echo $?
+        )
+        status=
+        if [[ code = 0 ]]; then status=success; else status=failure; fi
+        echo "status: ${status}"
         cat diff_coverage.txt
         
     - name: Create coverage comment
