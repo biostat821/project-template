@@ -34,6 +34,7 @@ jobs:
           cat test_report.txt
           status=
           if [[ code = 0 ]]; then status=success; else status=failure; fi
+          echo "status: ${status}"
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
@@ -54,6 +55,7 @@ jobs:
         git fetch -q origin ${{ github.event.pull_request.base.ref }}
         source venv/bin/activate
         coverage json -q
+        # git diff 02e1262ff488822d6a0a6c59f75ddd229cc2294f..HEAD > diff.txt
         git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
         code=$(
           python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
@@ -61,6 +63,7 @@ jobs:
         )
         status=
         if [[ code = 0 ]]; then status=success; else status=failure; fi
+        echo "status: ${status}"
         gh api \
           --method POST \
           -H "Accept: application/vnd.github+json" \
@@ -78,6 +81,7 @@ jobs:
           REPORT+=$'```\n'
           REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
+          echo "comment: ${REPORT}"
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
