@@ -75,8 +75,7 @@ jobs:
         status=
         if [[ code = 0 ]]; then status=success; else status=failure; fi
         echo "status: ${status}"
-        cat comment_response.json
-        url=$(jq ".url" comment_response.json)
+        url=$(jq ".html_url" comment_response.json)
         echo $url
         gh api \
           --method POST \
