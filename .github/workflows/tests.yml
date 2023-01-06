@@ -69,9 +69,11 @@ jobs:
           -H "Accept: application/vnd.github+json" \
           repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
           -f state="$status" \
-          -f context='tests' \
+          -f context='coverage' \
           -f description="Coverage status: $status" \
           &> /dev/null
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Create coverage comment
       run: |
