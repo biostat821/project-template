@@ -64,20 +64,20 @@ jobs:
             python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
             echo $?
           )
-          REPORT=$'diff coverage:\n'
-          REPORT+=$'```\n'
+          status=
+          if [[ code = 0 ]]; then status=success; else status=failure; fi
+          message="status: ${status^^}"
+          if [[ status = failure ]]; then message+="\nDiff coverage is <70%"; fi
+          REPORT=message
+          REPORT+=$'\n```\n'
           REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
-          echo $REPORT
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
             -f body="$REPORT" \
             > comment_response.json
-          status=
-          if [[ code = 0 ]]; then status=success; else status=failure; fi
-          echo "status: ${status}"
           url=$(jq -r ".html_url" comment_response.json)
           gh api \
             --method POST \
@@ -85,7 +85,7 @@ jobs:
             repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
             -f state="$status" \
             -f context='coverage' \
-            -f description="Coverage status: $status" \
+            -f description="$message" \
             -f target_url=$url
             &> /dev/null
         fi
