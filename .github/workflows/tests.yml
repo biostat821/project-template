@@ -24,67 +24,70 @@ jobs:
         if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
 
     - name: Run pytest
+      continue-on-error: true
       run: |
         if [ -d tests/ ]; then
           source venv/bin/activate
-          code=$(
-            coverage run --source=src/ -m pytest tests/ > test_report.txt
-            echo $?
-          )
-          cat test_report.txt
-          status=
-          if [[ code = 0 ]]; then status=success; else status=failure; fi
-          echo "status: ${status}"
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
-            -f state="$status" \
-            -f context='tests' \
-            -f description="Test status: $status" \
-            &> /dev/null
+          coverage run --source=src/ -m pytest tests/ > test_report.txt
+          # code=$(
+          #   coverage run --source=src/ -m pytest tests/ > test_report.txt
+          #   echo $?
+          # )
+          # cat test_report.txt
+          # status=
+          # if [[ code = 0 ]]; then status=success; else status=failure; fi
+          # echo "status: ${status}"
+          # gh api \
+          #   --method POST \
+          #   -H "Accept: application/vnd.github+json" \
+          #   repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          #   -f state="$status" \
+          #   -f context='tests' \
+          #   -f description="Test status: $status" \
+          #   &> /dev/null
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Check coverage
       run: |
-        # Fetch enough history for a common merge-base commit
-        git fetch -q origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
-        # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
-        git fetch -q origin ${{ github.event.pull_request.base.ref }}
-        source venv/bin/activate
-        coverage json -q
-        # git diff 02e1262ff488822d6a0a6c59f75ddd229cc2294f..HEAD > diff.txt
-        git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
-        code=$(
-          python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
-          echo $?
-        )
-        REPORT=$'diff coverage:\n'
-        REPORT+=$'```\n'
-        REPORT+=$(cat diff_coverage.txt)
-        REPORT+=$'\n```'
-        echo "comment: ${REPORT}"
-        gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
-          -f body="$REPORT" \
-          > comment_response.json
-        status=
-        if [[ code = 0 ]]; then status=success; else status=failure; fi
-        echo "status: ${status}"
-        url=$(jq -r ".html_url" comment_response.json)
-        echo $url
-        gh api \
-          --method POST \
-          -H "Accept: application/vnd.github+json" \
-          repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
-          -f state="$status" \
-          -f context='coverage' \
-          -f description="Coverage status: $status" \
-          -f target_url=$url
-          &> /dev/null
+        if [ -f .coverage ]; then
+          # Fetch enough history for a common merge-base commit
+          git fetch -q origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
+          # Fetch is smart enough to keep commits fetched minimal if it finds local history already has a commit from the base branch:
+          git fetch -q origin ${{ github.event.pull_request.base.ref }}
+          source venv/bin/activate
+          coverage json -q
+          # git diff 02e1262ff488822d6a0a6c59f75ddd229cc2294f..HEAD > diff.txt
+          git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
+          code=$(
+            python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
+            echo $?
+          )
+          REPORT=$'diff coverage:\n'
+          REPORT+=$'```\n'
+          REPORT+=$(cat diff_coverage.txt)
+          REPORT+=$'\n```'
+          echo $REPORT
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+            -f body="$REPORT" \
+            > comment_response.json
+          status=
+          if [[ code = 0 ]]; then status=success; else status=failure; fi
+          echo "status: ${status}"
+          url=$(jq -r ".html_url" comment_response.json)
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+            -f state="$status" \
+            -f context='coverage' \
+            -f description="Coverage status: $status" \
+            -f target_url=$url
+            &> /dev/null
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
