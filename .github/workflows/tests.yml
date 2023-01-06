@@ -54,7 +54,10 @@ jobs:
         source venv/bin/activate
         coverage json
         git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
+        # git diff HEAD^..HEAD > diff.txt
+        cat diff.txt
         python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
+        cat diff_coverage.txt
         
     - name: Create coverage comment
       run: |

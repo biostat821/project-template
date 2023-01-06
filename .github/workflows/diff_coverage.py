@@ -129,7 +129,7 @@ def generate_report(coverage: dict[str, dict[str, set[int]]]) -> str:
     ----------------------------------------------
     TOTAL                8      4    50%
     """
-    name_width = max(len(path) for path in coverage)
+    name_width = max(len(path) for path in coverage) if coverage else 5
     header = "Name".ljust(name_width, " ") + "   Stmts   Miss  Cover   Missing"
     separator = "-" * len(header)
     lines = [
