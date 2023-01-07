@@ -28,7 +28,11 @@ jobs:
       run: |
         if [ -d tests/ ]; then
           source venv/bin/activate
-          coverage run --source=src/ -m pytest tests/
+          code=$(
+            coverage run --source=src/ -m pytest tests/
+            echo $?
+          )
+          echo $code > exit_code.txt
           # code=$(
           #   coverage run --source=src/ -m pytest tests/ > test_report.txt
           #   echo $?
@@ -94,3 +98,7 @@ jobs:
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Exit with code
+      run: |
+        exit $(echo exit_code.txt)
