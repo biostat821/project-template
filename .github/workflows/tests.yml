@@ -91,7 +91,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
             -f state="$status" \
-            -f context='coverage' \
+            -f context='tests / coverage (pull_request)' \
             -f description="$message" \
             -f target_url=$url
             &> /dev/null
@@ -101,4 +101,4 @@ jobs:
 
     - name: Exit with code
       run: |
-        exit $(echo exit_code.txt)
+        exit $(cat exit_code.txt)
