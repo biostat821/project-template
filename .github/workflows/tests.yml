@@ -68,7 +68,7 @@ jobs:
           if [[ code = 0 ]]; then status=success; else status=failure; fi
           message="status: ${status^^}"
           if [[ status = failure ]]; then message+="\nDiff coverage is <70%"; fi
-          REPORT=message
+          REPORT=$message
           REPORT+=$'\n```\n'
           REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
