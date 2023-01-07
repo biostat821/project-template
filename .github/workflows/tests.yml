@@ -35,7 +35,7 @@ jobs:
           # )
           # cat test_report.txt
           # status=
-          # if [[ code = 0 ]]; then status=success; else status=failure; fi
+          # if [[ "$code" = 0 ]]; then status=success; else status=failure; fi
           # echo "status: ${status}"
           # gh api \
           #   --method POST \
@@ -65,9 +65,9 @@ jobs:
             echo $?
           )
           status=
-          if [[ code = 0 ]]; then status=success; else status=failure; fi
+          if [[ "$code" = 0 ]]; then status=success; else status=failure; fi
           message="status: ${status^^}"
-          if [[ status == failure ]]; then
+          if [[ "$status" == "failure" ]]; then
             echo "generating failure message"
             message+="\nDiff coverage is <70%"
           fi
