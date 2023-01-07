@@ -29,9 +29,10 @@ jobs:
         if [ -d tests/ ]; then
           source venv/bin/activate
           code=$(
-            coverage run --source=src/ -m pytest tests/
+            coverage run --source=src/ -m pytest tests/ > test_report.txt
             echo $?
           )
+          cat test_report.txt
           echo $code > exit_code.txt
           # code=$(
           #   coverage run --source=src/ -m pytest tests/ > test_report.txt
