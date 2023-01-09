@@ -4,7 +4,7 @@ from collections import defaultdict
 import json
 import re
 import sys
-from typing import Iterable
+from typing import Any, Iterable
 
 
 def get_changed_lines(diff: str) -> dict[str, set[int]]:
@@ -43,7 +43,7 @@ def remove_docstring_lines(path: str, lines: Iterable[int]) -> set[int]:
 
 
 def get_covered_lines(
-    coverage: dict,
+    coverage: dict[str, Any],
 ) -> tuple[dict[str, set[int]], dict[str, set[int]]]:
     """Get covered lines."""
     executed = {
@@ -68,22 +68,22 @@ def intersect(
     return intersection
 
 
-def num_stmts(cov):
+def num_stmts(cov: dict[str, set[int]]) -> int:
     """Compute total number of statements."""
     return len(cov["executed"]) + len(cov["missing"])
 
 
-def num_miss(cov):
+def num_miss(cov: dict[str, set[int]]) -> int:
     """Compute number of uncovered statements."""
     return len(cov["missing"])
 
 
-def pct_cover(cov):
+def pct_cover(cov: dict[str, set[int]]) -> float:
     """Compute percent of statements covered."""
     return len(cov["executed"]) / num_stmts(cov) * 100
 
 
-def format_missing(missing):
+def format_missing(missing: set[int]) -> str:
     """Return formatted string list of missing lines."""
     output = ""
     start = 0
@@ -107,7 +107,9 @@ def format_missing(missing):
     return output
 
 
-def generate_report_line(cov, include_missing=True):
+def generate_report_line(
+    cov: dict[str, set[int]], include_missing: bool = True
+) -> str:
     """Generate the report line for a single file."""
     try:
         cover = f"{pct_cover(cov):6.0f}%"
@@ -148,7 +150,7 @@ def generate_report(coverage: dict[str, dict[str, set[int]]]) -> str:
     return "\n".join([header, separator, *lines, separator, total])
 
 
-def main(diff_txt: str, coverage_json: str):
+def main(diff_txt: str, coverage_json: str) -> None:
     """Compute diff coverage."""
     with open(diff_txt, "r") as stream:
         diff = stream.read()

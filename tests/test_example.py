@@ -7,6 +7,6 @@ def test_example() -> None:
     main()
 
 
-def test_something():
+def test_something() -> None:
     """Test something else."""
     do_something()
