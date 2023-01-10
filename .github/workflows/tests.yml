@@ -34,6 +34,8 @@ jobs:
           )
           cat test_report.txt
           echo $code > exit_code.txt
+        else
+          echo 0 > exit_code.txt
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
