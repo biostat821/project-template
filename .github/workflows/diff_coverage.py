@@ -23,7 +23,6 @@ def get_changed_lines(diff: str) -> dict[str, set[int]]:
             line_num = int(match.group(1))
         elif match := re.match(r"^(?:\[[0-9;]*m)*([\\\ +-])(.*)", line):
             prefix = match.group(1)
-            # code = match.group(2)
             if prefix == "+":
                 changed[path].add(line_num)
             if prefix in (" ", "+"):
@@ -158,15 +157,6 @@ def main(diff_txt: str, coverage_json: str) -> None:
     with open(coverage_json, "r") as stream:
         coverage = json.load(stream)
     executed, missing = get_covered_lines(coverage)
-
-    # coverage = {
-    #     path: {
-    #         "executed": executed.get(path, set()),
-    #         "missing": missing.get(path, set()),
-    #     }
-    #     for path in set(executed) | set(missing)
-    # }
-    # print(generate_report(coverage))
 
     diff_executed = intersect(changed, executed)
     diff_missing = intersect(changed, missing)
