@@ -18,8 +18,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m venv venv
-        source venv/bin/activate
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
 
@@ -27,12 +25,10 @@ jobs:
       continue-on-error: true
       run: |
         if [ -d tests/ ]; then
-          source venv/bin/activate
           code=$(
             coverage run --source=src/ -m pytest tests/ > test_report.txt
             echo $?
           )
-          cat test_report.txt
           echo $code > exit_code.txt
         else
           echo 0 > exit_code.txt
@@ -45,23 +41,31 @@ jobs:
         if [ -f .coverage ]; then
           git fetch -q origin ${{ github.event.pull_request.head.ref }} --depth $(( ${{ github.event.pull_request.commits }} + 1 ))
           git fetch -q origin ${{ github.event.pull_request.base.ref }}
-          source venv/bin/activate
           coverage json -q
           git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
-          code=$(
+          diff_status=$(
             python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
             echo $?
           )
-          if [[ "$code" = 0 ]]; then status=success; else status=failure; fi
+          total_pct=$(jq ".totals.percent_covered" coverage.json)
+          if (( $(echo "$diff_status == 0" | bc) )) && (( $(echo "$total_pct > 70" | bc) )); then status=success; else status=failure; fi
           message="status: ${status^^}"
           REPORT=$message
-          if [[ "$status" == "failure" ]]; then
-            REPORT+=$'\nDiff coverage is <70%'
+          if [[ "$diff_status" = 0 ]]; then
+            REPORT+=$'\nDiff coverage is >=70%:'
           else
-            REPORT+=$'\nDiff coverage is >=70%'
+            REPORT+=$'\nDiff coverage is <70%:'
           fi
           REPORT+=$'\n```\n'
           REPORT+=$(cat diff_coverage.txt)
+          REPORT+=$'\n```'
+          if (( $(echo "$total_pct > 70" | bc) )); then
+            REPORT+=$'\nTotal coverage is >=70%:'
+          else
+            REPORT+=$'\nTotal coverage is <70%:'
+          fi
+          REPORT+=$'\n```\n'
+          REPORT+=$(coverage report -m)
           REPORT+=$'\n```'
           gh api \
             --method POST \
@@ -82,6 +86,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Exit with code
+    - name: Print report and exit with code
       run: |
+        cat test_report.txt
         exit $(cat exit_code.txt)
