@@ -1,6 +1,13 @@
 [tool.black]
 line-length = 79
 
+[tool.mypy]
+mypy_path = "src"
+explicit_package_bases = true
+iognore_missing_imports = true
+namespace_packages = true
+strict = true
+
 [tool.pytest.ini_options]
 pythonpath = [
   "src"
