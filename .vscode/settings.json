@@ -1,6 +1,9 @@
 {
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.formatOnSave": true,
+    "editor.rulers": [
+        79
+    ],
     "python.formatting.blackArgs": [
         "--line-length=79"
     ],
