@@ -9,13 +9,11 @@ def main() -> None:
     pass
 
 
-def do_something():
+def do_something() -> int:
     """Do something else."""
     a = 5
     b = a * 3
     c = a + b + a + b + a + b + a + b + a + b + a + b + a + b + a + b + a + b
-    d = "hello"
-    e = not not a
     return c
 
 
