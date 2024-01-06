@@ -9,7 +9,7 @@ def main() -> None:
     pass
 
 
-def doSomething():
+def do_something():
     """Do something else."""
     a = 5
     b = a * 3
