@@ -149,7 +149,7 @@ def generate_report(coverage: dict[str, dict[str, set[int]]]) -> str:
     return "\n".join([header, separator, *lines, separator, total])
 
 
-def main(diff_txt: str, coverage_json: str) -> None:
+def main(diff_txt: str, coverage_json: str, threshold: int) -> None:
     """Compute diff coverage."""
     with open(diff_txt) as stream:
         diff = stream.read()
@@ -179,7 +179,7 @@ def main(diff_txt: str, coverage_json: str) -> None:
         ),
     }
     try:
-        if pct_cover(total_diff_cov) < 70:
+        if pct_cover(total_diff_cov) < threshold:
             sys.exit(1)
     except ZeroDivisionError:
         pass
@@ -187,7 +187,13 @@ def main(diff_txt: str, coverage_json: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--threshold",
+        type=int,
+        default=70,
+        help="Set the threshold value (default: 70)",
+    )
     parser.add_argument("diff_txt")
     parser.add_argument("coverage_json")
     args = parser.parse_args()
-    main(args.diff_txt, args.coverage_json)
+    main(args.diff_txt, args.coverage_json, args.threshold)
