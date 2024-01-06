@@ -43,27 +43,36 @@ jobs:
           git fetch -q origin ${{ github.event.pull_request.base.ref }}
           coverage json -q
           git diff ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} > diff.txt
+          threshold_pct=0
           diff_status=$(
-            python .github/workflows/diff_coverage.py diff.txt coverage.json > diff_coverage.txt
+            python .github/workflows/diff_coverage.py --threshold $threshold_pct diff.txt coverage.json > diff_coverage.txt
             echo $?
           )
           total_pct=$(jq ".totals.percent_covered" coverage.json)
-          if (( $(echo "$diff_status == 0" | bc) )) && (( $(echo "$total_pct > 70" | bc) )); then status=success; else status=failure; fi
+          if (( $(echo "$diff_status == 0" | bc) )) && (( $(echo "$total_pct >= $threshold_pct" | bc) )); then
+            status=success;
+          else
+            status=failure;
+          fi
           message="status: ${status^^}"
           REPORT=$message
+          REPORT+=$'\nDiff coverage is '
           if [[ "$diff_status" = 0 ]]; then
-            REPORT+=$'\nDiff coverage is >=70%:'
+            tmp=">=$threshold_pct%:"
           else
-            REPORT+=$'\nDiff coverage is <70%:'
+            tmp="<$threshold_pct%:"
           fi
+          REPORT+=$tmp
           REPORT+=$'\n```\n'
           REPORT+=$(cat diff_coverage.txt)
           REPORT+=$'\n```'
-          if (( $(echo "$total_pct > 70" | bc) )); then
-            REPORT+=$'\nTotal coverage is >=70%:'
+          REPORT+=$'\nTotal coverage is '
+          if (( $(echo "$total_pct >= $threshold_pct" | bc) )); then
+            tmp=">=$threshold_pct%:"
           else
-            REPORT+=$'\nTotal coverage is <70%:'
+            tmp="<$threshold_pct%:"
           fi
+          REPORT+=$tmp
           REPORT+=$'\n```\n'
           REPORT+=$(coverage report -m)
           REPORT+=$'\n```'
