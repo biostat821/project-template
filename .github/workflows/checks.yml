@@ -20,6 +20,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install mypy ruff
+        pip install -r requirements-test.txt
 
     - name: Run checks
       run: |
