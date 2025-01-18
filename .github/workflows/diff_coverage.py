@@ -1,10 +1,12 @@
 """Compute diff coverage."""
+
 import argparse
 import json
 import re
 import sys
 from collections import defaultdict
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 
 def get_changed_lines(diff: str) -> dict[str, set[int]]:
