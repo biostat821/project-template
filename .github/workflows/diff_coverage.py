@@ -43,7 +43,7 @@ def remove_docstring_lines(path: str, lines: Iterable[int]) -> set[int]:
     }
 
 
-def get_covered_lines(
+def get_covered_lines(  # type: ignore[explicit-any]
     coverage: dict[str, Any],
 ) -> tuple[dict[str, set[int]], dict[str, set[int]]]:
     """Get covered lines."""
