@@ -1,4 +1,5 @@
 """Example tests."""
+
 from example import do_something, main
 
 
